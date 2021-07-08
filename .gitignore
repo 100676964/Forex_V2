@@ -1,0 +1,5 @@
+# Default ignored files
+/GA_Optimizer/__pycache__/
+/GA_Optimizer/CAD.txt
+/GA_Optimizer/EUR.txt
+/GA_Optimizer/JPY.txt
