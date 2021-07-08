@@ -1,4 +1,4 @@
-import tkinter as tk
+from tkinter import *
 
 def color(RGB):
     return '#%02x%02x%02x' % RGB
@@ -8,7 +8,7 @@ if __name__ == "__main__":
     HEIGHT = 768
     # ----------------------------------------------^ Theme----------------------------------------------------
     # -----------------------------------------------Root ini + Preload Pages + Initialize Login Page-------------------------------------------------------------------------
-    root = tk.Tk()
+    root = Tk()
     root.title('Forex Bot')
     initx = int(root.winfo_screenwidth()/2-WIDTH/2)
     inity = int(root.winfo_screenheight()/2-HEIGHT/2)
