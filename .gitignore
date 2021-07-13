@@ -1,4 +1,5 @@
 # Default ignored files
+/GUI/__pycache__/
 /GA_Optimizer/__pycache__/
 /User_Data/__pycache__/
 /GA_Optimizer/CAD.txt
