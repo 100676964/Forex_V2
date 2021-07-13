@@ -4,22 +4,19 @@ currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
 from User_Data import authendication as auth
-
-class login_gui:
-    def __init__(self,root:Tk,theme:dict) -> None:
-        for child in root.winfo_children():
-            child.destroy()
-        canvas = Canvas(root,background='grey')
+class login:
+    def __init__(self,root:Tk,theme:dict,switch) -> None:
+        self.switch = switch
+        self.canvas = Canvas(root,background='grey')
+        self.canvas.rowconfigure(0,weight = 1)
+        self.canvas.rowconfigure(1,weight = 2)
+        self.canvas.rowconfigure(2,weight = 1)
+        self.canvas.columnconfigure(0,weight = 1)
+        self.canvas.columnconfigure(1,weight = 2)
+        self.canvas.columnconfigure(2,weight = 1)
         
-        canvas.rowconfigure(0,weight = 1)
-        canvas.rowconfigure(1,weight = 2)
-        canvas.rowconfigure(2,weight = 1)
-        canvas.columnconfigure(0,weight = 1)
-        canvas.columnconfigure(1,weight = 2)
-        canvas.columnconfigure(2,weight = 1)
-        canvas.grid(row=0,column=0,sticky='nsew')
 
-        self.inner_canvas = Canvas(canvas,background= theme.get('background_color'),highlightbackground = theme.get('widgetBgColor'))
+        self.inner_canvas = Canvas(self.canvas,background= theme.get('background_color'),highlightbackground = theme.get('widgetBgColor'))
         self.inner_canvas.grid(row = 1,column = 1,sticky = 'nsew')
 
         self.inner_canvas.rowconfigure(0,weight = 2)
@@ -52,15 +49,18 @@ class login_gui:
 
         # ------------------------------------------------------Login Button---------------------------------------------------------------
         Button(self.inner_canvas, text = 'Log In', font = theme.get('buttonFonts'), background = theme.get('widgetBgColor'), activebackground = theme.get('pressedColor'),command=self.authendicate ).grid(row = 4, column = 1,columnspan=2,sticky = "ew")
-        Button(self.inner_canvas, text = 'Create New User', font = theme.get('buttonFonts'), background = theme.get('widgetBgColor'),activebackground = theme.get('pressedColor'),).grid(row = 5, column = 1,columnspan=2,sticky = "ew",pady = (10,0))
+        Button(self.inner_canvas, text = 'Create New User', font = theme.get('buttonFonts'), background = theme.get('widgetBgColor'),activebackground = theme.get('pressedColor'),command = self.register).grid(row = 5, column = 1,columnspan=2,sticky = "ew",pady = (10,0))
     
     def authendicate(self):
         if len(self.name_entry.get()) != 0 and len(self.password_entry.get()) != 0:
             auth_result = auth.check_user(self.name_entry.get(),self.password_entry.get())
             if auth_result[0] == True:
                 pass
-                # self.accessfunction(self.name_entry.get(),auth_result[1],auth_result[2])
+                self.switch.access_bot(self.name_entry.get(),auth_result[1],auth_result[2])
             else:
                 self.message.config(text = "Access Denied!")
         else:
             self.message.config(text = "Enter Fields!")
+    
+    def register(self):
+        self.switch.go_to_registration()

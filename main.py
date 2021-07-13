@@ -1,5 +1,5 @@
 from tkinter import *
-from GUI import login
+from GUI import switch
 def color(RGB):
     return '#%02x%02x%02x' % RGB
 
@@ -40,6 +40,6 @@ if __name__ == "__main__":
 
     username = ""
     mainpage = ""
-    login.login_gui(root,theme)
+    switch.switch(root,theme)
     # root.protocol("WM_DELETE_WINDOW", on_closing)
     root.mainloop()
