@@ -68,6 +68,31 @@ class autotradeUI:
         self.listbox.pack(side=LEFT,fill=BOTH)
         self.listbox.event_generate("<<ListboxSelect>>")
         scrollbar.config(command=self.listbox.yview)
+        #.........................................................................pair_info.......................................................................
+        self.pair_info = Canvas(self.canvas,background = 'gray',highlightthickness=0)
+        self.pair_info.grid(row = 3, column = 2, sticky = 'nsew',pady = 5)
+        self.pair_info.rowconfigure(0, weight = 0)
+        self.pair_info.rowconfigure(1, weight = 0)
+        self.pair_info.rowconfigure(2, weight = 0)
+        self.pair_info.rowconfigure(3, weight = 1)
+        self.pair_info.rowconfigure(4, weight = 0)
+        self.pair_info.rowconfigure(5, weight = 1)
+
+        self.pair_info.columnconfigure(0,weight = 1)
+        #row 1
+        Label(self.pair_info, text='Profit/Loss', font = theme.get('labelFonts'), background = theme.get('widgetBgColor')).grid(row = 0, column = 0, sticky = 'ew',padx = 5,pady = (5,0))
+        self.pair_pl = Label(self.pair_info, text='', font = theme.get('labelFonts'), background = theme.get('widgetBgColor'))
+        self.pair_pl.grid(row = 1, column = 0, sticky = 'nsew',padx = 5,pady = (0,5))
+        
+        #row 2
+        Label(self.pair_info, text='Position Value', font = theme.get('labelFonts'), background = theme.get('widgetBgColor')).grid(row = 2, column = 0, sticky = 'ew',padx = 5,pady = (5,0))
+        self.pair_value = Label(self.pair_info, text='', font = theme.get('labelFonts'), background = theme.get('widgetBgColor'))
+        self.pair_value.grid(row = 3, column = 0, sticky = 'nsew',padx = 5,pady = (0,5))
+
+        #row 3
+        Label(self.pair_info, text='Holdings', font = theme.get('labelFonts'), background = theme.get('widgetBgColor')).grid(row = 4, column = 0, sticky = 'ew',padx = 5,pady = (5,0))
+        self.pair_holdings = Label(self.pair_info, text='', font = theme.get('labelFonts'), background = theme.get('widgetBgColor'))
+        self.pair_holdings.grid(row = 5, column = 0, sticky = 'nsew',padx = 5,pady = (0,5))
 
     def graph_update(self):
         buffer = 0
@@ -111,17 +136,22 @@ class autotradeUI:
                 
             #Trade
 
-
-
             #GUI updates    
                 #update pair selection box
                 if self.listbox.size() != len(self.pairs):
                     self.listbox.delete(0,END)
                     for i in range(len(self.pairs)):
                         self.listbox.insert(i,self.pairs[i])
-                
-
+                if len(self.position) > 0:
+                    self.pair_pl.config(text = "C$ "+str(self.position[3]))
+                    self.pair_value.config(text = "C$ "+str(self.position[4]))
+                    self.pair_holdings.config(text = str(int(self.position[1]))+" pips")
+                else:
+                    self.pair_pl.config(text = "C$ 0")
+                    self.pair_value.config(text = "C$ 0")
+                    self.pair_holdings.config(text = "0 pips")
             time.sleep(0.5)
+
     def OnMouseWheel(self,event):
         pass
     
