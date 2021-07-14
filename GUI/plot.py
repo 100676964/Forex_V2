@@ -88,7 +88,7 @@ def plot(graphcanvas: Canvas,plotlist:list,**optional):
                 dash=(1, 1)
             )
         #plot mean line and mean value + bands
-        if optional.get('parameters') != [0,0,0]:
+        if optional.get('parameters') != [0,0,0] and optional.get('parameters') is not None:
             max_number = max(plotlist)
             min_number = min(plotlist)
             prices = optional.get('prices')
