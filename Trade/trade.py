@@ -2,7 +2,7 @@ import numpy as np
 from statistics import mean,stdev
 # def get_closing_prices(rates:np.array):
 
-def get_action(rates:np.array, avaliable_funs):
+def get_action(rates:np.array, avaliable_funs, current_pl):
     x = 20
     y = 1.5
     z = 1.5
