@@ -1,5 +1,6 @@
 from tkinter import *
 import threading
+from datetime import datetime
 import time
 import os, sys
 import traceback
@@ -11,6 +12,7 @@ from API import oanda
 from Trade import trade
 class autotradeUI:
     def __init__(self,root:Tk,theme:dict,switch,API:oanda.OandaAPI) -> None:
+        self.root = root
         self.API = API
         self.current_pair = 0
         self.closing_rates = []
@@ -140,7 +142,7 @@ class autotradeUI:
             height = 2, 
             background = theme.get('widgetBgColor'), 
             activebackground = theme.get('pressedColor'),
-            # command = lambda: self.start_stop_toggle(True)
+            command = lambda: self.start_stop_toggle(True)
             )
         self.btn_trade_start.grid(row = 0, column = 0, sticky = "nsew", padx = 10, pady = 10)
 
@@ -152,7 +154,7 @@ class autotradeUI:
             height = 2, 
             background = theme.get('widgetBgColor'), 
             activebackground = theme.get('pressedColor'),
-            # command = lambda: self.start_stop_toggle(False)
+            command = lambda: self.start_stop_toggle(False)
             )
 
     def graph_update(self):
@@ -176,7 +178,7 @@ class autotradeUI:
     def data_update(self):
         while True:
             if len(self.API.rates) != 0 and len(self.API.acct_info) != 0: 
-            #initial
+            #initial..............................
                 self.pairs = self.API.rates[:,0]
 
                 self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3]) 
@@ -201,7 +203,7 @@ class autotradeUI:
                 self.avaliableMargin = self.acct_info[2]
                 self.total_positon_value = self.acct_info[4]
                 
-            #Trade
+            #Trade................................
                 if self.trading == True:
                     immediate_position_update = False
                     
@@ -217,13 +219,13 @@ class autotradeUI:
                                     else:
                                         break
                                 else:
-                                    print("connection issue")
+                                    print("No Connection")
                                 self.API.open_positions = self.API.get_open_positions()
                                 time.sleep(1)
                                     
                             immediate_position_update = False
             
-            #GUI updates
+            #GUI updates..........................
                 if self.canvas.winfo_viewable() == True:    
                     #update pair selection box
                     if self.listbox.size() != len(self.pairs):
@@ -248,9 +250,40 @@ class autotradeUI:
                     if self.message.cget('text') == "No Connection":
                         self.message.config(text = "connected")
             else:
-                self.message.config(text = "Connection Error")
+                self.message.config(text = "No Connection")
             time.sleep(0.5)
-
+    def start_stop_toggle(self,on):
+        if self.trading == on:
+            return
+        if on == True:
+            self.btn_trade_stop.grid(row = 0, column = 0, sticky = "nsew", padx = 10, pady = 10)
+            self.btn_trade_start.grid_forget()
+            self.trading = on
+            self.session_start_time = datetime.now()
+            t3 = threading.Thread(target = self.clock_update)
+            t3.daemon = True
+            t3.start()
+        if on == False:
+            self.btn_trade_start.grid(row = 0, column = 0, sticky = "nsew", padx = 10, pady = 10)
+            self.btn_trade_stop.grid_forget()
+            self.trading = on
+            self.message.config(text = "Auto Trade")
+    
+    def clock_update(self):
+        while self.root.winfo_exists() == True:
+            try:
+                time.sleep(0.1)
+                if self.trading == False:
+                    return
+                elif self.canvas.winfo_viewable() == True and self.message.cget('text') != "No Connection":
+                    elapsed_time = datetime.now() - self.session_start_time
+                    elapsed_time = str(elapsed_time)
+                    self.message.config(text = "Trading Duration: "+ elapsed_time[0:len(elapsed_time)-7]) 
+                    # print("still going")   
+            except Exception as e:
+                traceback.print_tb(e.__traceback__)
+                return
+    
     def OnMouseWheel(self,event):
         if event.delta < 0 and self.n_of_points < 300:
             self.n_of_points += 4
