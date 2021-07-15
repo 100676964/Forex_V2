@@ -1,6 +1,7 @@
 # Default ignored files
 /API/__pycache__/
 /GUI/__pycache__/
+/Trade/__pycache__
 /GA_Optimizer/__pycache__/
 /User_Data/__pycache__/
 /GA_Optimizer/CAD.txt
