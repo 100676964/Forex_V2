@@ -36,24 +36,20 @@ class OandaAPI:
             # self.EUR_CAD= self.get_EUR_CAD()
             self.open_positions = self.get_open_positions()
             time.sleep(5)
-
+#............................................................API CALLs...................................................
     def __call_account(self):
         return self.s.get("https://api-fxpractice.oanda.com/v3/accounts/"+self.AccountID+"/summary",headers = {**self.Auth},timeout = 5)
-
     # get 500 mid candles datas in 2 minutes interval
     def __call_M_candles(self,pair,count):
         return self.s.get( "https://api-fxpractice.oanda.com/v3/instruments/"+pair+"/candles?count="+str(count)+"&price=M&granularity="+TRADING_DATA_INTERVAL, headers = {**self.Auth},timeout = 5)
-
     # get 5000 ask+bid candles datas in 2 minutes interval
     def __call_BA_candles(self,pair,count):
         return self.s.get( "https://api-fxpractice.oanda.com/v3/instruments/"+pair+"/candles?count="+str(count)+"&price=BA&granularity="+TRADING_DATA_INTERVAL, headers = {**self.Auth},timeout = 5)
-
     def __call_Positions(self):
         return self.s.get("https://api-fxpractice.oanda.com/v3/accounts/"+self.AccountID+"/openPositions",headers = {**self.Auth},timeout = 5)
-
     def __make_order(self,order):
         return self.s.post("https://api-fxpractice.oanda.com/v3/accounts/"+self.AccountID+"/orders", headers = {**self.Auth}, json = {**order},timeout = 5)
-
+#.........................................................................................................................
     # NAV = net asset value of this account || pl = life time total profit/loss || AVLmargin = the amount avaliable for invest
     def get_acct_info(self):
         try:
@@ -128,9 +124,29 @@ class OandaAPI:
             return [response['instrument'].replace('_','/'),np.array(prices)]
         else:
             return []
+    
     #[pair name, pair rates][which pair][ask,bid][open,high,low,close]
     def rate_list(self,pair_list,count = 300) -> np.array:
         rates = []
         for i in pair_list:
             rates.append(self.get_rate(i,count))
         return np.array(rates,dtype=object)
+    
+    #use negative value to sell
+    def make_order(self,pair,units):
+        order = {
+            "order": {
+                "units": units,
+                "instrument": pair,
+                "timeInForce": "FOK",
+                "type": "MARKET",
+                "positionFill": "DEFAULT"
+                } 
+            }
+        try:
+            response = self.__make_order(order)
+        except Exception as e:
+            traceback.print_tb(e.__traceback__)
+            return None
+        print(response)
+        return response.status_code
