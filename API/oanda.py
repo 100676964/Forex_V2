@@ -18,7 +18,7 @@ class OandaAPI:
         self.interval = TRADING_DATA_INTERVAL
         self.s = requests.session()
         self.s.verify = True
-        self.account_info = []
+        self.acct_info = []
         self.rates = []
         self.open_positions = []
         if update == True:
@@ -28,7 +28,7 @@ class OandaAPI:
     #background update
     def get_update(self):
         while True:
-            self.account_info = self.get_acct_info()
+            self.acct_info = self.get_acct_info()
             self.rates = self.rate_list(PAIR_LIST,count = 300)
             # self.USD_CAD = self.get_USD_CAD()
             # self.USD_JPY = self.get_USD_JPY()
@@ -60,7 +60,7 @@ class OandaAPI:
             response = self.__call_account()
         except:
             traceback.print_exc()
-            return None
+            return []
         if response.status_code == 200:
             response = response.json()
             return np.array(
@@ -71,7 +71,7 @@ class OandaAPI:
                 response['account']['positionValue']
                 ])
         else:
-            return None
+            return []
     
     # Return formant [['pair name','units','average price','pl']]
     def get_open_positions(self):
@@ -79,7 +79,7 @@ class OandaAPI:
             response = self.__call_Positions()
         except:
             traceback.print_exc()
-            return None
+            return []
         if response.status_code == 200:
             response = response.json()
             postions = []
@@ -95,9 +95,9 @@ class OandaAPI:
                             ])
                 return np.array(postions)
             else:
-                return None
+                return []
         else:
-            return None
+            return []
     
     #return the pricelist (ask:[open,high,low,close],sell:[open,high,low,close]) To get just the buy and sell price use price[-1,:,3]
     def get_rate(self,pair,count = 300):
@@ -105,7 +105,7 @@ class OandaAPI:
             response = self.__call_BA_candles(pair,count)
         except:
             traceback.print_exc()
-            return None
+            return []
         if response.status_code == 200:
             response = response.json()
             prices = []
@@ -127,7 +127,7 @@ class OandaAPI:
                     ])
             return [response['instrument'].replace('_','/'),np.array(prices)]
         else:
-            return None
+            return []
     #[pair name, pair rates][which pair][ask,bid][open,high,low,close]
     def rate_list(self,pair_list,count = 300) -> np.array:
         rates = []

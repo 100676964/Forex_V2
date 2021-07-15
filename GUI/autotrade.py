@@ -15,6 +15,8 @@ class autotradeUI:
         self.current_pair = 0
         self.closing_rates = []
         self.position = []
+        self.trading = False
+        self.n_of_points = 30
 
         self.canvas = Canvas(root,background = theme.get('background_color'))
         self.canvas.rowconfigure(0,weight = 1)
@@ -52,12 +54,16 @@ class autotradeUI:
 
         #........................................................................Pair selection............................................................
         self.selectioncanvas = Canvas(self.canvas,background = "grey",highlightthickness=0)
+        self.selectioncanvas.rowconfigure(0,weight = 0)
+        self.selectioncanvas.columnconfigure(0,weight = 5)
+        self.selectioncanvas.columnconfigure(1,weight = 1)
         self.selectioncanvas.grid(row = 2, column = 2,pady = 5)
         
         scrollbar = Scrollbar(self.selectioncanvas,background=theme.get('widgetBgColor'))
-        scrollbar.pack(side=RIGHT,fill=Y)
+        scrollbar.grid(row = 0,column=1,sticky='ns')
         
         self.listbox = Listbox(self.selectioncanvas,
+                                height=5,
                                 background=theme.get('widgetBgColor'),
                                 font=('Arial',25, 'bold'),
                                 activestyle='none',
@@ -65,7 +71,7 @@ class autotradeUI:
                                 justify=CENTER,
                                 yscrollcommand=scrollbar.set)
 
-        self.listbox.pack(side=LEFT,fill=BOTH)
+        self.listbox.grid(row=0,column=0,sticky='ns')
         self.listbox.event_generate("<<ListboxSelect>>")
         scrollbar.config(command=self.listbox.yview)
         #.........................................................................pair_info.......................................................................
@@ -93,6 +99,61 @@ class autotradeUI:
         Label(self.pair_info, text='Holdings', font = theme.get('labelFonts'), background = theme.get('widgetBgColor')).grid(row = 4, column = 0, sticky = 'ew',padx = 5,pady = (5,0))
         self.pair_holdings = Label(self.pair_info, text='', font = theme.get('labelFonts'), background = theme.get('widgetBgColor'))
         self.pair_holdings.grid(row = 5, column = 0, sticky = 'nsew',padx = 5,pady = (0,5))
+        
+        #.........................................................................General_Info.......................................................................
+        self.general_info = Canvas(self.canvas,background = 'gray',highlightthickness=0)
+        self.general_info.grid(row = 4, column = 1, columnspan = 2, sticky = 'nsew',pady = 5)
+        self.general_info.rowconfigure(0,weight = 1)
+        self.general_info.rowconfigure(1,weight = 1)
+        self.general_info.columnconfigure(0,weight = 1)
+        self.general_info.columnconfigure(1,weight = 1)
+        self.general_info.columnconfigure(2,weight = 1)
+        self.general_info.columnconfigure(3,weight = 1)
+        #row 1
+        Label(self.general_info, text='Total Worth:', font = theme.get('labelFonts'), background = theme.get('widgetBgColor')).grid(row = 0, column = 0, sticky = 'nsew', padx = (5,0), pady = 5)
+        self.total_worth = Label(self.general_info, text='', font = theme.get('labelFonts'), background = theme.get('widgetBgColor'))
+        self.total_worth.grid(row = 0, column = 1, sticky = 'nsew',padx = (0,5) ,pady = 5)
+
+        Label(self.general_info, text='Total Profit/Loss:', font = theme.get('labelFonts'), background = theme.get('widgetBgColor')).grid(row = 0, column = 2, sticky = 'nsew', padx = (5,0), pady = 5)
+        self.total_pl_entry = Label(self.general_info, text='', font = theme.get('labelFonts'), background = theme.get('widgetBgColor'))
+        self.total_pl_entry.grid(row = 0, column = 3, sticky = 'nsew',padx = (0,5) ,pady = 5)
+        #row 2
+        Label(self.general_info, text='Total Cash:', font = theme.get('labelFonts'), background = theme.get('widgetBgColor')).grid(row = 1, column = 0, sticky = 'nsew', padx = (5,0), pady = 5)
+        self.total_cash = Label(self.general_info, text='', font = theme.get('labelFonts'), background = theme.get('widgetBgColor'))
+        self.total_cash.grid(row = 1, column = 1, sticky = 'nsew',padx = (0,5) ,pady = 5)
+
+        Label(self.general_info, text='Positons Value:', font = theme.get('labelFonts'), background = theme.get('widgetBgColor')).grid(row = 1, column = 2, sticky = 'nsew', padx = (5,0), pady = 5)
+        self.total_p_value = Label(self.general_info, text='', font = theme.get('labelFonts'), background = theme.get('widgetBgColor'))
+        self.total_p_value.grid(row = 1, column = 3, sticky = 'nsew',padx = (0,5) ,pady = 5)
+        
+        #.........................................................................Auto Trading Toggle.................................................................
+        self.btn_Canvas = Canvas(self.canvas,background = 'gray',highlightthickness=0)
+        self.btn_Canvas.grid(row = 5, column = 1, columnspan = 2,sticky = 'nsew',pady = 10)
+        self.btn_Canvas.rowconfigure(0,weight = 1)
+        self.btn_Canvas.columnconfigure(0,weight = 1)
+
+        self.btn_trade_start = Button(
+            self.btn_Canvas, 
+            text="Start Auto Trade", 
+            font = theme.get('buttonFonts'), 
+            width = 20, 
+            height = 2, 
+            background = theme.get('widgetBgColor'), 
+            activebackground = theme.get('pressedColor'),
+            # command = lambda: self.start_stop_toggle(True)
+            )
+        self.btn_trade_start.grid(row = 0, column = 0, sticky = "nsew", padx = 10, pady = 10)
+
+        self.btn_trade_stop = Button(
+            self.btn_Canvas, 
+            text="Stop Auto Trade", 
+            font = theme.get('buttonFonts'), 
+            width = 20, 
+            height = 2, 
+            background = theme.get('widgetBgColor'), 
+            activebackground = theme.get('pressedColor'),
+            # command = lambda: self.start_stop_toggle(False)
+            )
 
     def graph_update(self):
         buffer = 0
@@ -103,10 +164,10 @@ class autotradeUI:
                     position = float(self.position[2])
                 if self.canvas.winfo_viewable() == True and len(self.closing_rates) > 10:
                     if buffer == 0:
-                        plot.plot(self.graphcanvas_1,self.closing_rates,position = position)
+                        plot.plot(self.graphcanvas_1,self.closing_rates[-self.n_of_points:],position = position)
                         buffer = 1
                     elif buffer == 1:
-                        plot.plot(self.graphcanvas_2,self.closing_rates,position = position)
+                        plot.plot(self.graphcanvas_2,self.closing_rates[-self.n_of_points:],position = position)
                         buffer = 0
                 time.sleep(0.1)
             except:
@@ -114,46 +175,91 @@ class autotradeUI:
     
     def data_update(self):
         while True:
-            if self.canvas.winfo_viewable() == True and len(self.API.rates) != 0:
-                
+            if len(self.API.rates) != 0 and len(self.API.acct_info) != 0: 
             #initial
                 self.pairs = self.API.rates[:,0]
 
                 self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3]) 
-                #check current selected pair
+                #check current selected pair for display
                 if len(self.listbox.curselection()) > 0:
                     self.current_pair = self.listbox.curselection()[0]
                 #get positions for current pair 
-                all_positions = self.API.open_positions
-                if all_positions is not None:
-                    for p in all_positions:
+                self.all_positions = self.API.open_positions
+                if len(self.all_positions) > 0:
+                    for p in self.all_positions:
                         if p[0] == self.API.rates[:,0][self.current_pair]:
                             self.position = p
                         else:
                             self.position = []
                 else:
                     self.position = []
+
+                #get accountinformation
+                self.acct_info = self.to_floats(self.API.acct_info)
+                self.NAV = self.acct_info[0]
+                self.total_PL = self.acct_info[1]+self.acct_info[3]
+                self.avaliableMargin = self.acct_info[2]
+                self.total_positon_value = self.acct_info[4]
                 
             #Trade
+                if self.trading == True:
+                    immediate_position_update = False
+                    
+                    if immediate_position_update == True:
+                            self.API.open_positions = self.API.get_open_positions()
+                            while True:
+                                if len(self.API.open_positions) > 0:
+                                    if self.all_positions.shape == self.API.open_positions.shape:
+                                        if (self.all_positions == self.API.open_positions).all():
+                                            print("De-sync error")
+                                        else:
+                                            break
+                                    else:
+                                        break
+                                else:
+                                    print("connection issue")
+                                self.API.open_positions = self.API.get_open_positions()
+                                time.sleep(1)
+                                    
+                            immediate_position_update = False
+            
+            #GUI updates
+                if self.canvas.winfo_viewable() == True:    
+                    #update pair selection box
+                    if self.listbox.size() != len(self.pairs):
+                        self.listbox.delete(0,END)
+                        for i in range(len(self.pairs)):
+                            self.listbox.insert(i,self.pairs[i])
+                        self.listbox.select_set(0)
+                        
+                    if len(self.position) > 0:
+                        self.pair_pl.config(text = "C$ "+str(self.position[3]))
+                        self.pair_value.config(text = "C$ "+str(self.position[4]))
+                        self.pair_holdings.config(text = str(int(self.position[1]))+" pips")
+                    else:
+                        self.pair_pl.config(text = "C$ 0")
+                        self.pair_value.config(text = "C$ 0")
+                        self.pair_holdings.config(text = "0 pips")
 
-            #GUI updates    
-                #update pair selection box
-                if self.listbox.size() != len(self.pairs):
-                    self.listbox.delete(0,END)
-                    for i in range(len(self.pairs)):
-                        self.listbox.insert(i,self.pairs[i])
-                if len(self.position) > 0:
-                    self.pair_pl.config(text = "C$ "+str(self.position[3]))
-                    self.pair_value.config(text = "C$ "+str(self.position[4]))
-                    self.pair_holdings.config(text = str(int(self.position[1]))+" pips")
-                else:
-                    self.pair_pl.config(text = "C$ 0")
-                    self.pair_value.config(text = "C$ 0")
-                    self.pair_holdings.config(text = "0 pips")
+                    self.total_worth.config(text = "C$ "+str(round(self.NAV,2)))
+                    self.total_pl_entry.config(text = "C$ "+str(round(self.total_PL,2)))
+                    self.total_cash.config(text = "C$ "+str(round(self.avaliableMargin,2)))
+                    self.total_p_value.config(text = "C$ "+str(round(self.total_positon_value,2)))
+                    if self.message.cget('text') == "No Connection":
+                        self.message.config(text = "connected")
+            else:
+                self.message.config(text = "Connection Error")
             time.sleep(0.5)
 
     def OnMouseWheel(self,event):
-        pass
-    
+        if event.delta < 0 and self.n_of_points < 300:
+            self.n_of_points += 4
+        if event.delta > 0 and self.n_of_points > 20:
+            self.n_of_points -= 4
+        if self.n_of_points > 300:
+            self.n_of_points = 300
+        if self.n_of_points < 30:
+            self.n_of_points = 30
+
     def to_floats(self,l):
         return [float(i) for i in l]
