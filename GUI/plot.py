@@ -91,16 +91,13 @@ def plot(graphcanvas: Canvas,plotlist:list,**optional):
         if optional.get('parameters') != [0,0,0] and optional.get('parameters') is not None:
             max_number = max(plotlist)
             min_number = min(plotlist)
-            prices = optional.get('prices')
-            N_of_days = int(optional.get('parameters')[0])
-            mean = sum(prices[-N_of_days:])/N_of_days
-            std = stdev(prices[-N_of_days:])
-            U_band = mean + optional.get('parameters')[1]*std
-            L_band = mean - optional.get('parameters')[2]*std 
+            para = optional.get('parameters')
+            mean = para[0]
+            U_band = para[1]
+            L_band = para[2]
             
             scaled_mean = scale_number(mean,max_number,min_number,p_area_h,0)
             #mean
-            # print(optional.get('parameters'))
             graphcanvas.create_line(
                     padding/2,
                     p_area_h - scaled_mean + padding/2,

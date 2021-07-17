@@ -4,6 +4,8 @@ from datetime import datetime
 import time
 import os, sys
 import traceback
+
+from numpy.lib.function_base import average
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
@@ -16,6 +18,7 @@ class autotradeUI:
         self.API = API
         self.current_pair = 0
         self.closing_rates = []
+        self.all_closing_rates = []
         self.position = []
         self.trading = False
         self.n_of_points = 30
@@ -162,14 +165,17 @@ class autotradeUI:
         while True:
             try:
                 position = None
+                parameters = None
                 if len(self.position) > 0:
                     position = float(self.position[2])
+                if len(self.closing_rates) > 50:
+                    parameters = trade.calculate_bands(self.closing_rates)
                 if self.canvas.winfo_viewable() == True and len(self.closing_rates) > 10:
                     if buffer == 0:
-                        plot.plot(self.graphcanvas_1,self.closing_rates[-self.n_of_points:],position = position)
+                        plot.plot(self.graphcanvas_1,self.closing_rates[-self.n_of_points:],position = position,parameters=parameters)
                         buffer = 1
                     elif buffer == 1:
-                        plot.plot(self.graphcanvas_2,self.closing_rates[-self.n_of_points:],position = position)
+                        plot.plot(self.graphcanvas_2,self.closing_rates[-self.n_of_points:],position = position,parameters=parameters)
                         buffer = 0
                 time.sleep(0.1)
             except:
@@ -181,7 +187,9 @@ class autotradeUI:
             #initial..............................
                 self.pairs = self.API.rates[:,0]
 
-                self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3]) 
+                self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3])
+                for i in range(len(self.pairs)):
+                    self.all_closing_rates.append(self.to_floats(self.API.rates[:,1][i][:,0][:,3]))
                 #check current selected pair for display
                 if len(self.listbox.curselection()) > 0:
                     self.current_pair = self.listbox.curselection()[0]
@@ -206,7 +214,20 @@ class autotradeUI:
             #Trade................................
                 if self.trading == True:
                     immediate_position_update = False
+                    buy_list,sell_list = trade.get_actions(self.API.rates[:,0],self.all_closing_rates,self.NAV,self.avaliableMargin,self.all_positions)
                     
+                    if len(buy_list) > 0:
+                        for buy in buy_list:
+                            # self.API.make_order(buy[0].replace('/','_'),str(int(buy[1])))
+                            print('buy',buy[0].replace('/','_'),str(int(buy[1])))
+                        immediate_position_update == True
+                    
+                    if len(sell_list) > 0:
+                        for sell in sell_list:
+                            # self.API.make_order(sell[0].replace('/','_'),str(sell[1]))
+                            print('sell',sell[0].replace('/','_'),str(sell[1]))
+                        immediate_position_update == True
+
                     if immediate_position_update == True:
                             self.API.open_positions = self.API.get_open_positions()
                             while True:
