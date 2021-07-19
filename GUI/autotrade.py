@@ -183,98 +183,101 @@ class autotradeUI:
     
     def data_update(self):
         while True:
-            if len(self.API.rates) != 0 and len(self.API.acct_info) != 0: 
-            #initial..............................
-                self.pairs = self.API.rates[:,0]
+            try:
+                if len(self.API.rates) != 0 and len(self.API.acct_info) != 0: 
+                #initial..............................
+                    self.pairs = self.API.rates[:,0]
 
-                self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3])
-                for i in range(len(self.pairs)):
-                    self.all_closing_rates.append(self.to_floats(self.API.rates[:,1][i][:,0][:,3]))
-                #check current selected pair for display
-                if len(self.listbox.curselection()) > 0:
-                    self.current_pair = self.listbox.curselection()[0]
-                #get positions for current pair 
-                self.all_positions = self.API.open_positions
-                if len(self.all_positions) > 0:
-                    for p in self.all_positions:
-                        if p[0] == self.API.rates[:,0][self.current_pair]:
-                            self.position = p
-                        else:
-                            self.position = []
-                else:
-                    self.position = []
+                    self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3])
+                    for i in range(len(self.pairs)):
+                        self.all_closing_rates.append(self.to_floats(self.API.rates[:,1][i][:,0][:,3]))
+                    #check current selected pair for display
+                    if len(self.listbox.curselection()) > 0:
+                        self.current_pair = self.listbox.curselection()[0]
+                    #get positions for current pair 
+                    self.all_positions = self.API.open_positions
+                    if len(self.all_positions) > 0:
+                        for p in self.all_positions:
+                            if p[0] == self.API.rates[:,0][self.current_pair]:
+                                self.position = p
+                            else:
+                                self.position = []
+                    else:
+                        self.position = []
 
-                #get accountinformation
-                self.acct_info = self.to_floats(self.API.acct_info)
-                self.NAV = self.acct_info[0]
-                self.total_PL = self.acct_info[1]+self.acct_info[3]
-                self.avaliableMargin = self.acct_info[2]
-                self.total_positon_value = self.acct_info[4]
-                
-            #Trade................................
-                if self.trading == True:
-                    immediate_position_update = False
-                    buy_list,sell_list = trade.get_actions(self.API.rates[:,0],self.all_closing_rates,self.NAV,self.avaliableMargin,self.all_positions)
-                    if len(buy_list) > 0:
-                        prices = self.API.get_price(buy_list[:,0])
-                        print(prices)
-                        for i in range(len(buy_list)):
-                            
-                            self.API.make_order(buy_list[i][0],str(int(float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))))
-                            print('buy',buy_list[i][0],float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))
-                        immediate_position_update == True
+                    #get accountinformation
+                    self.acct_info = self.to_floats(self.API.acct_info)
+                    self.NAV = self.acct_info[0]
+                    self.total_PL = self.acct_info[1]+self.acct_info[3]
+                    self.avaliableMargin = self.acct_info[2]
+                    self.total_positon_value = self.acct_info[4]
                     
-                    if len(sell_list) > 0:
-                        for sell in sell_list:
-                            # self.API.make_order(sell[0].replace('/','_'),str(sell[1]))
-                            
-                            print('sell',sell[0],str(sell[1]))
-                        immediate_position_update == True
+                #Trade................................
+                    if self.trading == True:
+                        immediate_position_update = False
+                        buy_list,sell_list = trade.get_actions(self.API.rates[:,0],self.all_closing_rates,self.NAV,self.avaliableMargin,self.all_positions)
+                        if len(buy_list) > 0:
+                            prices = self.API.get_price(buy_list[:,0])
+                            print(prices)
+                            for i in range(len(buy_list)):
+                                
+                                self.API.make_order(buy_list[i][0],str(int(float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))))
+                                print('buy',buy_list[i][0],float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))
+                            immediate_position_update == True
+                        
+                        if len(sell_list) > 0:
+                            for sell in sell_list:
+                                # self.API.make_order(sell[0].replace('/','_'),str(sell[1]))
+                                
+                                print('sell',sell[0],str(sell[1]))
+                            immediate_position_update == True
 
-                    if immediate_position_update == True:
-                            self.API.open_positions = self.API.get_open_positions()
-                            while True:
-                                if len(self.API.open_positions) > 0:
-                                    if self.all_positions.shape == self.API.open_positions.shape:
-                                        if (self.all_positions == self.API.open_positions).all():
-                                            print("De-sync error")
+                        if immediate_position_update == True:
+                                self.API.open_positions = self.API.get_open_positions()
+                                while True:
+                                    if len(self.API.open_positions) > 0:
+                                        if self.all_positions.shape == self.API.open_positions.shape:
+                                            if (self.all_positions == self.API.open_positions).all():
+                                                print("De-sync error")
+                                            else:
+                                                break
                                         else:
                                             break
                                     else:
-                                        break
-                                else:
-                                    print("No Connection")
-                                self.API.open_positions = self.API.get_open_positions()
-                                time.sleep(1)
-                                    
-                            immediate_position_update = False
-            
-            #GUI updates..........................
-                if self.canvas.winfo_viewable() == True:    
-                    #update pair selection box
-                    if self.listbox.size() != len(self.pairs):
-                        self.listbox.delete(0,END)
-                        for i in range(len(self.pairs)):
-                            self.listbox.insert(i,self.pairs[i])
-                        self.listbox.select_set(0)
-                        
-                    if len(self.position) > 0:
-                        self.pair_pl.config(text = "C$ "+str(self.position[3]))
-                        self.pair_value.config(text = "C$ "+str(self.position[4]))
-                        self.pair_holdings.config(text = str(int(self.position[1]))+" pips")
-                    else:
-                        self.pair_pl.config(text = "C$ 0")
-                        self.pair_value.config(text = "C$ 0")
-                        self.pair_holdings.config(text = "0 pips")
+                                        print("No Connection")
+                                    self.API.open_positions = self.API.get_open_positions()
+                                    time.sleep(1)
+                                        
+                                immediate_position_update = False
+                
+                #GUI updates..........................
+                    if self.canvas.winfo_viewable() == True:    
+                        #update pair selection box
+                        if self.listbox.size() != len(self.pairs):
+                            self.listbox.delete(0,END)
+                            for i in range(len(self.pairs)):
+                                self.listbox.insert(i,self.pairs[i])
+                            self.listbox.select_set(0)
+                            
+                        if len(self.position) > 0:
+                            self.pair_pl.config(text = "C$ "+str(self.position[3]))
+                            self.pair_value.config(text = "C$ "+str(self.position[4]))
+                            self.pair_holdings.config(text = str(int(self.position[1]))+" pips")
+                        else:
+                            self.pair_pl.config(text = "C$ 0")
+                            self.pair_value.config(text = "C$ 0")
+                            self.pair_holdings.config(text = "0 pips")
 
-                    self.total_worth.config(text = "C$ "+str(round(self.NAV,2)))
-                    self.total_pl_entry.config(text = "C$ "+str(round(self.total_PL,2)))
-                    self.total_cash.config(text = "C$ "+str(round(self.avaliableMargin,2)))
-                    self.total_p_value.config(text = "C$ "+str(round(self.total_positon_value,2)))
-                    if self.message.cget('text') == "No Connection":
-                        self.message.config(text = "connected")
-            else:
-                self.message.config(text = "No Connection")
+                        self.total_worth.config(text = "C$ "+str(round(self.NAV,2)))
+                        self.total_pl_entry.config(text = "C$ "+str(round(self.total_PL,2)))
+                        self.total_cash.config(text = "C$ "+str(round(self.avaliableMargin,2)))
+                        self.total_p_value.config(text = "C$ "+str(round(self.total_positon_value,2)))
+                        if self.message.cget('text') == "No Connection":
+                            self.message.config(text = "connected")
+                else:
+                    self.message.config(text = "No Connection")
+            except:
+                traceback.print_exc()
             time.sleep(0.5)
     def start_stop_toggle(self,on):
         if self.trading == on:
