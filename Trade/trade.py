@@ -32,9 +32,9 @@ def get_actions(name_list,rates_list,NAV,avaliable_margin,positions):
                     buy_candidates[j] = temp
         for i in range(3):
             if i < len(buy_candidates) and avaliable_margin > NAV/3:
-                buy_list.append([buy_candidates[i][0],(NAV/3)/buy_candidates[i][2]])
+                buy_list.append([buy_candidates[i][0],(NAV/3)])
                 avaliable_margin = avaliable_margin - NAV/3
-    return buy_list,sell_list
+    return np.array(buy_list),np.array(sell_list)
 
 
 

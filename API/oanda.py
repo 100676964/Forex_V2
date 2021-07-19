@@ -6,7 +6,7 @@ import time
 import threading
 import traceback
 from typing import List
-PAIR_LIST = ["USD_CAD","USD_JPY","USD_HKD","USD_CNY","USD_CHF","EUR_USD","EUR_GBP","GBP_USD","AUD_USD","NZD_CHF"]
+PAIR_LIST = ["USD_CAD","USD_JPY","USD_HKD","USD_CHF","EUR_USD","EUR_GBP","GBP_USD","AUD_USD","NZD_CHF"]
 TRADING_DATA_INTERVAL = "H1"
 
 class OandaAPI:
@@ -49,6 +49,8 @@ class OandaAPI:
         return self.s.get("https://api-fxpractice.oanda.com/v3/accounts/"+self.AccountID+"/openPositions",headers = {**self.Auth},timeout = 5)
     def __make_order(self,order):
         return self.s.post("https://api-fxpractice.oanda.com/v3/accounts/"+self.AccountID+"/orders", headers = {**self.Auth}, json = {**order},timeout = 5)
+    def __call_price(self,pair):
+        return self.s.get("https://api-fxpractice.oanda.com/v3/accounts/"+self.AccountID+"/pricing?instruments="+pair,headers = {**self.Auth},timeout = 5)
 #.........................................................................................................................
     # NAV = net asset value of this account || pl = life time total profit/loss || AVLmargin = the amount avaliable for invest
     def get_acct_info(self):
@@ -137,7 +139,7 @@ class OandaAPI:
         order = {
             "order": {
                 "units": units,
-                "instrument": pair,
+                "instrument": pair.replace('/','_'),
                 "timeInForce": "FOK",
                 "type": "MARKET",
                 "positionFill": "DEFAULT"
@@ -148,5 +150,27 @@ class OandaAPI:
         except Exception as e:
             traceback.print_tb(e.__traceback__)
             return None
-        print(response)
+        print(response.json())
         return response.status_code
+    
+    def get_price(self,pairs):
+        pair_list=""
+        for pair in pairs:
+            if len(pairs) > 1:
+                pair_list += pair.replace('/','_')+"%2C"
+            else:
+                pair_list = pair
+        try:
+            response = self.__call_price(pair_list)
+            response = response.json()
+            prices = []
+            for i in range(len(response['prices'])):
+                prices.append([
+                    response['prices'][i]['instrument'],
+                    response['prices'][i]['asks'][0]['price'],
+                    response['prices'][i]['quoteHomeConversionFactors']['positiveUnits']
+                ])
+        except Exception as e:
+            traceback.print_tb(e.__traceback__)
+            return []
+        return np.array(prices)

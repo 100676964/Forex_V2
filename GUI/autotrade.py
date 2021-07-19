@@ -215,17 +215,20 @@ class autotradeUI:
                 if self.trading == True:
                     immediate_position_update = False
                     buy_list,sell_list = trade.get_actions(self.API.rates[:,0],self.all_closing_rates,self.NAV,self.avaliableMargin,self.all_positions)
-                    
                     if len(buy_list) > 0:
-                        for buy in buy_list:
-                            # self.API.make_order(buy[0].replace('/','_'),str(int(buy[1])))
-                            print('buy',buy[0].replace('/','_'),str(int(buy[1])))
+                        prices = self.API.get_price(buy_list[:,0])
+                        print(prices)
+                        for i in range(len(buy_list)):
+                            
+                            self.API.make_order(buy_list[i][0],str(int(float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))))
+                            print('buy',buy_list[i][0],float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))
                         immediate_position_update == True
                     
                     if len(sell_list) > 0:
                         for sell in sell_list:
                             # self.API.make_order(sell[0].replace('/','_'),str(sell[1]))
-                            print('sell',sell[0].replace('/','_'),str(sell[1]))
+                            
+                            print('sell',sell[0],str(sell[1]))
                         immediate_position_update == True
 
                     if immediate_position_update == True:
