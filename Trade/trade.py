@@ -12,7 +12,7 @@ def get_actions(name_list,rates_list,NAV,avaliable_margin,positions):
         if result[0] == 'sell' and len(positions) > 0:
             for position in positions:
                 if position[0] == name_list[i]:
-                    sell_list.append([name_list[i],position[1]*-1])
+                    sell_list.append([name_list[i],int(position[1])*-1])
                     break
         if result[0] == 'buy':
             if len(positions) > 0:
