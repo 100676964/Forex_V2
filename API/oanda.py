@@ -150,7 +150,7 @@ class OandaAPI:
         except Exception as e:
             traceback.print_tb(e.__traceback__)
             return None
-        print(response.json())
+        print(response.status_code)
         return response.status_code
     
     def get_price(self,pairs):

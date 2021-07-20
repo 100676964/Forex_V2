@@ -194,17 +194,19 @@ class autotradeUI:
                     #check current selected pair for display
                     if len(self.listbox.curselection()) > 0:
                         self.current_pair = self.listbox.curselection()[0]
+                    
                     #get positions for current pair 
                     self.all_positions = self.API.open_positions
+                    
                     if len(self.all_positions) > 0:
                         for p in self.all_positions:
                             if p[0] == self.API.rates[:,0][self.current_pair]:
                                 self.position = p
+                                break
                             else:
                                 self.position = []
                     else:
                         self.position = []
-
                     #get accountinformation
                     self.acct_info = self.to_floats(self.API.acct_info)
                     self.NAV = self.acct_info[0]
@@ -216,21 +218,21 @@ class autotradeUI:
                     if self.trading == True:
                         immediate_position_update = False
                         buy_list,sell_list = trade.get_actions(self.API.rates[:,0],self.all_closing_rates,self.NAV,self.avaliableMargin,self.all_positions)
+
                         if len(buy_list) > 0:
                             prices = self.API.get_price(buy_list[:,0])
-                            print(prices)
                             for i in range(len(buy_list)):
                                 
                                 self.API.make_order(buy_list[i][0],str(int(float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))))
                                 print('buy',buy_list[i][0],float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))
-                            immediate_position_update == True
+                            immediate_position_update = True
                         
                         if len(sell_list) > 0:
                             for sell in sell_list:
                                 # self.API.make_order(sell[0].replace('/','_'),str(sell[1]))
                                 
                                 print('sell',sell[0],str(sell[1]))
-                            immediate_position_update == True
+                            immediate_position_update = True
 
                         if immediate_position_update == True:
                                 self.API.open_positions = self.API.get_open_positions()

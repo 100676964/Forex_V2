@@ -1,7 +1,7 @@
 from tkinter.constants import N
 import numpy as np
 from statistics import mean,stdev
-
+LEVERAGE = 10
 # def get_closing_prices(rates:np.array):
 def get_actions(name_list,rates_list,NAV,avaliable_margin,positions):
     buy_candidates = []
@@ -32,7 +32,7 @@ def get_actions(name_list,rates_list,NAV,avaliable_margin,positions):
                     buy_candidates[j] = temp
         for i in range(3):
             if i < len(buy_candidates) and avaliable_margin > NAV/3:
-                buy_list.append([buy_candidates[i][0],(NAV/3)])
+                buy_list.append([buy_candidates[i][0],(NAV/3*LEVERAGE)])
                 avaliable_margin = avaliable_margin - NAV/3
     return np.array(buy_list),np.array(sell_list)
 
