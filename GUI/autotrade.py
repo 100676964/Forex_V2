@@ -184,7 +184,7 @@ class autotradeUI:
     def data_update(self):
         while True:
             try:
-                if len(self.API.rates) != 0 and len(self.API.acct_info) != 0: 
+                if len(self.API.rates) > 0 and len(self.API.acct_info) > 0: 
                 #initial..............................
                     self.pairs = self.API.rates[:,0]
 
