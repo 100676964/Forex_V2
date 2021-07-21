@@ -222,15 +222,17 @@ class autotradeUI:
                         if len(buy_list) > 0:
                             prices = self.API.get_price(buy_list[:,0])
                             for i in range(len(buy_list)):
-                                self.API.make_order(buy_list[i][0],str(int(float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))))
-                                print('buy',buy_list[i][0],float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))
-                            immediate_position_update = True
+                                result = self.API.make_order(buy_list[i][0],str(int(float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))))
+                                if result == 201:
+                                    print('buy',buy_list[i][0],float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))
+                                    immediate_position_update = True
                         
                         if len(sell_list) > 0:
                             for sell in sell_list:
-                                self.API.make_order(sell[0],str(sell[1]))
-                                print('sell',sell)
-                            immediate_position_update = True
+                                result = self.API.make_order(sell[0],str(sell[1]))
+                                if result == 201:
+                                    print('sell',sell)
+                                    immediate_position_update = True
 
                         if immediate_position_update == True:
                                 self.API.open_positions = self.API.get_open_positions()
