@@ -226,6 +226,8 @@ class autotradeUI:
                                 if result == 201:
                                     print('buy',buy_list[i][0],float(buy_list[i][1])/(float(prices[i][1])*float(prices[i][2])))
                                     immediate_position_update = True
+                                else:
+                                    print(result)
                         
                         if len(sell_list) > 0:
                             for sell in sell_list:
@@ -233,6 +235,8 @@ class autotradeUI:
                                 if result == 201:
                                     print('sell',sell)
                                     immediate_position_update = True
+                                else:
+                                    print(result)
 
                         if immediate_position_update == True:
                                 self.API.open_positions = self.API.get_open_positions()
