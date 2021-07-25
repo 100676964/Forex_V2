@@ -51,7 +51,7 @@ class autotradeUI:
         self.graphcanvas_2.bind("<MouseWheel>",self.OnMouseWheel)
         self.plotlist = []
         t1 = threading.Thread(target = self.graph_update)
-        t2 = threading.Thread(target = self.data_update)
+        t2 = threading.Thread(target = self.main_loop)
         t1.daemon = True
         t2.daemon = True
         t1.start()
@@ -77,7 +77,7 @@ class autotradeUI:
                                 yscrollcommand=scrollbar.set)
 
         self.listbox.grid(row=0,column=0,sticky='ns')
-        self.listbox.event_generate("<<ListboxSelect>>")
+        self.listbox.bind("<<ListboxSelect>>",self.change_pair)
         scrollbar.config(command=self.listbox.yview)
         #.........................................................................pair_info.......................................................................
         self.pair_info = Canvas(self.canvas,background = 'gray',highlightthickness=0)
@@ -181,39 +181,12 @@ class autotradeUI:
             except:
                 traceback.print_exc()
     
-    def data_update(self):
+    def main_loop(self):
         while True:
             try:
                 if len(self.API.rates) > 0 and len(self.API.acct_info) > 0: 
                 #initial..............................
-                    self.pairs = self.API.rates[:,0]
-
-                    self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3])
-                    for i in range(len(self.pairs)):
-                        self.all_closing_rates.append(self.to_floats(self.API.rates[:,1][i][:,0][:,3]))
-                    #check current selected pair for display
-                    if len(self.listbox.curselection()) > 0:
-                        self.current_pair = self.listbox.curselection()[0]
-                    
-                    #get positions for current pair 
-                    self.all_positions = self.API.open_positions
-                    
-                    if len(self.all_positions) > 0:
-                        for p in self.all_positions:
-                            if p[0] == self.API.rates[:,0][self.current_pair]:
-                                self.position = p
-                                break
-                            else:
-                                self.position = []
-                    else:
-                        self.position = []
-                    #get accountinformation
-                    self.acct_info = self.to_floats(self.API.acct_info)
-                    self.NAV = self.acct_info[0]
-                    self.total_PL = self.acct_info[1]+self.acct_info[3]
-                    self.avaliableMargin = self.acct_info[2]
-                    self.total_positon_value = self.acct_info[4]
-                    
+                    self.data_update()
                 #Trade................................
                     if self.trading == True:
                         immediate_position_update = False
@@ -257,34 +230,75 @@ class autotradeUI:
                                 immediate_position_update = False
                 
                 #GUI updates..........................
-                    if self.canvas.winfo_viewable() == True:    
-                        #update pair selection box
-                        if self.listbox.size() != len(self.pairs):
-                            self.listbox.delete(0,END)
-                            for i in range(len(self.pairs)):
-                                self.listbox.insert(i,self.pairs[i])
-                            self.listbox.select_set(0)
-                            
-                        if len(self.position) > 0:
-                            self.pair_pl.config(text = "C$ "+str(self.position[3]))
-                            self.pair_value.config(text = "C$ "+str(self.position[4]))
-                            self.pair_holdings.config(text = str(int(self.position[1]))+" pips")
-                        else:
-                            self.pair_pl.config(text = "C$ 0")
-                            self.pair_value.config(text = "C$ 0")
-                            self.pair_holdings.config(text = "0 pips")
-
-                        self.total_worth.config(text = "C$ "+str(round(self.NAV,2)))
-                        self.total_pl_entry.config(text = "C$ "+str(round(self.total_PL,2)))
-                        self.total_cash.config(text = "C$ "+str(round(self.avaliableMargin,2)))
-                        self.total_p_value.config(text = "C$ "+str(round(self.total_positon_value,2)))
-                        if self.message.cget('text') == "No Connection":
-                            self.message.config(text = "connected")
+                    self.GUI_update()
                 else:
                     self.message.config(text = "No Connection")
             except:
                 traceback.print_exc()
             time.sleep(0.5)
+
+    def change_pair(self,event):
+        #check current selected pair for display
+        try:
+            self.current_pair = self.listbox.curselection()[0]
+            self.data_update()
+            self.GUI_update()
+        except:
+            traceback.print_exc()
+        
+
+    def data_update(self):
+        self.pairs = self.API.rates[:,0]
+        self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3])
+        for i in range(len(self.pairs)):
+            self.all_closing_rates.append(self.to_floats(self.API.rates[:,1][i][:,0][:,3]))
+        
+        
+        #get positions for current pair 
+        self.all_positions = self.API.open_positions
+        
+        if len(self.all_positions) > 0:
+            for p in self.all_positions:
+                if p[0] == self.API.rates[:,0][self.current_pair]:
+                    self.position = p
+                    break
+                else:
+                    self.position = []
+        else:
+            self.position = []
+        #get accountinformation
+        self.acct_info = self.to_floats(self.API.acct_info)
+        self.NAV = self.acct_info[0]
+        self.total_PL = self.acct_info[1]+self.acct_info[3]
+        self.avaliableMargin = self.acct_info[2]
+        self.total_positon_value = self.acct_info[4]
+
+    def GUI_update(self):
+        if self.canvas.winfo_viewable() == True:    
+            #update pair selection box
+            if self.listbox.size() != len(self.pairs):
+                self.listbox.delete(0,END)
+                for i in range(len(self.pairs)):
+                    self.listbox.insert(i,self.pairs[i])
+                self.listbox.select_set(0)
+                
+            if len(self.position) > 0:
+                self.pair_pl.config(text = "C$ "+str(self.position[3]))
+                self.pair_value.config(text = "C$ "+str(self.position[4]))
+                self.pair_holdings.config(text = str(int(self.position[1]))+" pips")
+            else:
+                self.pair_pl.config(text = "C$ 0")
+                self.pair_value.config(text = "C$ 0")
+                self.pair_holdings.config(text = "0 pips")
+
+            self.total_worth.config(text = "C$ "+str(round(self.NAV,2)))
+            self.total_pl_entry.config(text = "C$ "+str(round(self.total_PL,2)))
+            self.total_cash.config(text = "C$ "+str(round(self.avaliableMargin,2)))
+            self.total_p_value.config(text = "C$ "+str(round(self.total_positon_value,2)))
+            
+            if self.message.cget('text') == "No Connection":
+                self.message.config(text = "connected")
+
     def start_stop_toggle(self,on):
         if self.trading == on:
             return
@@ -313,8 +327,8 @@ class autotradeUI:
                     elapsed_time = str(elapsed_time)
                     self.message.config(text = "Trading Duration: "+ elapsed_time[0:len(elapsed_time)-7]) 
                     # print("still going")   
-            except Exception as e:
-                traceback.print_tb(e.__traceback__)
+            except:
+                traceback.print_exc()
                 return
     
     def OnMouseWheel(self,event):
