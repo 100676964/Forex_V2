@@ -131,7 +131,11 @@ class OandaAPI:
     def rate_list(self,pair_list,count = 300) -> np.array:
         rates = []
         for i in pair_list:
-            rates.append(self.get_rate(i,count))
+            result = self.get_rate(i,count)
+            if len(result) > 0:
+                rates.append(result)
+            else:
+                return []
         return np.array(rates,dtype=object)
     
     #use negative value to sell
