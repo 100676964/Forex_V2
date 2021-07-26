@@ -6,7 +6,26 @@ import time
 import threading
 import traceback
 from typing import List
-PAIR_LIST = ["USD_CAD","USD_JPY","USD_HKD","USD_CHF","EUR_USD","EUR_GBP","GBP_USD","AUD_USD","NZD_CHF"]
+PAIR_LIST = [
+    "USD_CAD",
+    "USD_JPY",
+    "USD_HKD",
+    "USD_CHF",
+    "EUR_USD",
+    "EUR_GBP",
+    "EUR_CAD",
+    "EUR_HKD",
+    "GBP_USD",
+    "GBP_CAD",
+    "GBP_HKD",
+    "AUD_USD",
+    "AUD_CAD",
+    "AUD_CHF",
+    "CAD_CHF",
+    "CAD_JPY",
+    "CAD_HKD",
+    "CAD_SGD",
+    "NZD_CHF"]
 TRADING_DATA_INTERVAL = "H1"
 
 class OandaAPI:
