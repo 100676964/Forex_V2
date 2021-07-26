@@ -212,22 +212,22 @@ class autotradeUI:
                                     print(result)
 
                         if immediate_position_update == True:
-                                self.API.open_positions = self.API.get_open_positions()
-                                while True:
-                                    if len(self.API.open_positions) > 0:
-                                        if self.all_positions.shape == self.API.open_positions.shape:
-                                            if (self.all_positions == self.API.open_positions).all():
-                                                print("De-sync error")
-                                            else:
-                                                break
+                            self.API.open_positions = self.API.get_open_positions()
+                            while True:
+                                if len(self.API.open_positions) > 0:
+                                    if self.all_positions.shape == self.API.open_positions.shape:
+                                        if (self.all_positions == self.API.open_positions).all():
+                                            print("De-sync error")
                                         else:
                                             break
                                     else:
-                                        print("No Connection")
-                                    self.API.open_positions = self.API.get_open_positions()
-                                    time.sleep(1)
-                                        
-                                immediate_position_update = False
+                                        break
+                                else:
+                                    print("No Connection")
+                                self.API.open_positions = self.API.get_open_positions()
+                                time.sleep(1)
+                                    
+                            immediate_position_update = False
                 
                 #GUI updates..........................
                     self.GUI_update()
