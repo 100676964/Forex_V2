@@ -49,10 +49,6 @@ class OandaAPI:
         while True:
             self.acct_info = self.get_acct_info()
             self.rates = self.rate_list(PAIR_LIST,count = 300)
-            # self.USD_CAD = self.get_USD_CAD()
-            # self.USD_JPY = self.get_USD_JPY()
-            # self.EUR_USD = self.get_EUR_USD()
-            # self.EUR_CAD= self.get_EUR_CAD()
             self.open_positions = self.get_open_positions()
             time.sleep(5)
 #............................................................API CALLs...................................................
@@ -73,11 +69,11 @@ class OandaAPI:
 #.........................................................................................................................
     # NAV = net asset value of this account || pl = life time total profit/loss || AVLmargin = the amount avaliable for invest
     def get_acct_info(self):
-        try:
-            response = self.__call_account()
-        except:
-            traceback.print_exc()
-            return []
+        # try:
+        response = self.__call_account()
+        # except:
+            # traceback.print_exc()
+            # return []
         if response.status_code == 200:
             response = response.json()
             return np.array(
@@ -92,11 +88,11 @@ class OandaAPI:
     
     # Return formant [['pair name','units','average price','pl']]
     def get_open_positions(self):
-        try:
-            response = self.__call_Positions()
-        except:
-            traceback.print_exc()
-            return []
+        # try:
+        response = self.__call_Positions()
+        # except:
+        #     traceback.print_exc()
+        #     return []
         if response.status_code == 200:
             response = response.json()
             postions = []
@@ -118,11 +114,11 @@ class OandaAPI:
     
     #return the pricelist (ask:[open,high,low,close],sell:[open,high,low,close]) To get just the buy and sell price use price[-1,:,3]
     def get_rate(self,pair,count = 300):
-        try:
-            response = self.__call_BA_candles(pair,count)
-        except:
-            traceback.print_exc()
-            return []
+        # try:
+        response = self.__call_BA_candles(pair,count)
+        # except:
+        #     traceback.print_exc()
+        #     return []
         if response.status_code == 200:
             response = response.json()
             prices = []
@@ -168,11 +164,11 @@ class OandaAPI:
                 "positionFill": "DEFAULT"
                 } 
             }
-        try:
-            response = self.__make_order(order)
-        except Exception as e:
-            traceback.print_tb(e.__traceback__)
-            return None
+        # try:
+        response = self.__make_order(order)
+        # except:
+        #     traceback.print_exc()
+        #     return None
         print(response.status_code)
         return response.status_code
     
@@ -183,17 +179,17 @@ class OandaAPI:
                 pair_list += pair.replace('/','_')+"%2C"
             else:
                 pair_list = pair
-        try:
-            response = self.__call_price(pair_list)
-            response = response.json()
-            prices = []
-            for i in range(len(response['prices'])):
-                prices.append([
-                    response['prices'][i]['instrument'],
-                    response['prices'][i]['asks'][0]['price'],
-                    response['prices'][i]['quoteHomeConversionFactors']['positiveUnits']
-                ])
-        except Exception as e:
-            traceback.print_tb(e.__traceback__)
-            return []
+        # try:
+        response = self.__call_price(pair_list)
+        response = response.json()
+        prices = []
+        for i in range(len(response['prices'])):
+            prices.append([
+                response['prices'][i]['instrument'],
+                response['prices'][i]['asks'][0]['price'],
+                response['prices'][i]['quoteHomeConversionFactors']['positiveUnits']
+            ])
+        # except:
+        #     traceback.print_exc()
+        #     return []
         return np.array(prices)
