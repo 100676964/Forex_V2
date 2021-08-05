@@ -46,9 +46,14 @@ class OandaAPI:
             t1.start()
     #background update
     def get_update(self):
+        self.acct_info = self.get_acct_info()
+        self.rates = self.rate_list(PAIR_LIST,count = 300)
+        self.open_positions = self.get_open_positions()
         while True:
             self.acct_info = self.get_acct_info()
+            time.sleep(5)
             self.rates = self.rate_list(PAIR_LIST,count = 300)
+            time.sleep(5)
             self.open_positions = self.get_open_positions()
             time.sleep(5)
 #............................................................API CALLs...................................................
