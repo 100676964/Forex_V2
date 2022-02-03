@@ -9,12 +9,12 @@ if __name__ == "__main__":
 
     # all widgets background color
     theme = {
-                'widgetBgColor' : color((200, 150, 10)),
-                'pressedColor' : color((230, 180, 10)),
+                'widgetBgColor' : color((193, 215, 215)),
+                'pressedColor' : color((99, 156, 156)),
                 'widgetFgColor' : color((10, 10, 10)),
                 'background_color' : color((8, 8, 10)),
-                'labelFonts' : ('Arial',15, 'bold'),
-                'buttonFonts' : ('Arial', 12, 'bold')
+                'labelFonts' : ('Times New Roman',15, 'bold'),
+                'buttonFonts' : ('Times New Roman', 12, 'bold')
             }
 
     # button pressed color
