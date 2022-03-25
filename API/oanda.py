@@ -27,7 +27,7 @@ PAIR_LIST = [
     "CAD_SGD",
     "NZD_CHF"]
 TRADING_DATA_INTERVAL = "H1"
-
+UPDATE_INTERVAL = 60
 class OandaAPI:
     #initialization
     def __init__(self,AccountID,Token,update = False):
@@ -51,11 +51,11 @@ class OandaAPI:
         self.open_positions = self.get_open_positions()
         while True:
             self.acct_info = self.get_acct_info()
-            time.sleep(5)
+            # time.sleep(5)
             self.rates = self.rate_list(PAIR_LIST,count = 300)
-            time.sleep(5)
+            # time.sleep(5)
             self.open_positions = self.get_open_positions()
-            time.sleep(5)
+            time.sleep(UPDATE_INTERVAL)
 #............................................................API CALLs...................................................
     def __call_account(self):
         return self.s.get("https://api-fxpractice.oanda.com/v3/accounts/"+self.AccountID+"/summary",headers = {**self.Auth},timeout = 5)
