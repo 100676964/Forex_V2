@@ -248,6 +248,7 @@ class autotradeUI:
     def data_update(self):
         self.pairs = self.API.rates[:,0]
         self.closing_rates = self.to_floats(self.API.rates[:,1][self.current_pair][:,0][:,3])
+        self.all_closing_rates = []
         for i in range(len(self.pairs)):
             self.all_closing_rates.append(self.to_floats(self.API.rates[:,1][i][:,0][:,3]))
         
