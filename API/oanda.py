@@ -27,7 +27,7 @@ PAIR_LIST = [
     "CAD_SGD",
     "NZD_CHF"]
 TRADING_DATA_INTERVAL = "H1"
-UPDATE_INTERVAL = 5
+UPDATE_INTERVAL = 60
 class OandaAPI:
     #initialization
     def __init__(self,AccountID,Token,update = False):
