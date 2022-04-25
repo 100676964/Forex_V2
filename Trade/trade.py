@@ -35,7 +35,7 @@ def get_actions(name_list,rates_list,NAV,avaliable_margin,positions):
 
         for i in range(3 - len(positions)):
             if i < len(buy_candidates):
-                buy_list.append([buy_candidates[i][0],(math.floor(NAV/3.1)*LEVERAGE)])
+                buy_list.append([buy_candidates[i][0],(min(math.floor(NAV*0.31),avaliable_margin*0.95)*LEVERAGE)])
              
     return np.array(buy_list),np.array(sell_list)
 

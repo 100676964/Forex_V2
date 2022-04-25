@@ -224,8 +224,8 @@ class autotradeUI:
                                 else:
                                     print("No Connection")
                                 self.API.open_positions = self.API.get_open_positions()
-                                time.sleep(1)
-                                    
+                                self.API.acct_info = self.API.get_acct_info()
+                                time.sleep(1)       
                             immediate_position_update = False
                 
                 #GUI updates..........................
