@@ -50,12 +50,15 @@ class OandaAPI:
         self.rates = self.rate_list(PAIR_LIST,count = 300)
         self.open_positions = self.get_open_positions()
         while True:
-            self.acct_info = self.get_acct_info()
-            # time.sleep(5)
-            self.rates = self.rate_list(PAIR_LIST,count = 300)
-            # time.sleep(5)
-            self.open_positions = self.get_open_positions()
-            time.sleep(UPDATE_INTERVAL)
+            try:
+                self.acct_info = self.get_acct_info()
+                # time.sleep(5)
+                self.rates = self.rate_list(PAIR_LIST,count = 300)
+                # time.sleep(5)
+                self.open_positions = self.get_open_positions()
+                time.sleep(UPDATE_INTERVAL)
+            except:
+                traceback.print_exc()
 #............................................................API CALLs...................................................
     def __call_account(self):
         return self.s.get("https://api-fxpractice.oanda.com/v3/accounts/"+self.AccountID+"/summary",headers = {**self.Auth},timeout = 5)
